@@ -1,0 +1,42 @@
+const User = require("../Models/User")
+const generateToken = require("../utils/generateToken");
+const { hash } = require("bcrypt");
+
+async function signup(req, res) {
+    try {
+        const { username, password } = req.body;
+        if (!username || !password) return res.status(400).json({ message: "Username and password are required" });
+
+        const existingUser = await User.findOne({ username });
+        if (existingUser) return res.status(409).json({ message: "Username already taken" });
+
+        const passwordHash = await hash(password, 10);
+        const user = new User({ username, password: passwordHash });
+        await user.save();
+        const token = generateToken(user._id);
+        res.status(201).json({ token });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Server error" });
+    }
+}
+
+module.exports = { signup };
+
+
+module.exports = { signup };
+
+
+async function login(req, res) {
+    const { username, password } = req.body;
+    const user = await User.findOne({ username });
+    if (!user) return res.status(401).json({ message: 'Invalid credentials' });
+
+    const isMatch = await user.comparePassword(password);
+    if (!isMatch) return res.status(401).json({ message: 'Invalid credentials' });
+
+    const token = generateToken(user._id);
+    res.json({ token });
+}
+
+module.exports = { signup, login };
