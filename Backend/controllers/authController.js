@@ -21,12 +21,6 @@ async function signup(req, res) {
     }
 }
 
-module.exports = { signup };
-
-
-module.exports = { signup };
-
-
 async function login(req, res) {
     const { username, password } = req.body;
     const user = await User.findOne({ username });
