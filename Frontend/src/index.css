@@ -1,1 +1,7 @@
 @import "tailwindcss";
+
+.custom-progress {
+  background: linear-gradient(to right, #5433ff, #20bdff, #a5fecb)!important;
+  height: 5px !important;
+  border-radius: 4px !important;
+}
