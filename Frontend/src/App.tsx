@@ -4,18 +4,22 @@ import Register from "./pages/Register";
 import MainPage from "./pages/MainPage";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import PublicRoute from "./routes/PublicRoute";
+import MainLayout from "./layout/MainLayout";
+import InRoom from "./pages/InRoom";
 
 function App() {
   return (
     <Routes>
       <Route
-        path="/"
         element={
           <ProtectedRoute>
-            <MainPage />
+            <MainLayout />
           </ProtectedRoute>
         }
-      />
+      >
+        <Route path="/" element={<MainPage />} />
+        <Route path="/room/:id" element={<InRoom />} />
+      </Route>
       <Route
         path="/login"
         element={
