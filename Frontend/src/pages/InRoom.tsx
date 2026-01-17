@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 import InRoomHeader from "../components/InRoomHeader";
 import ChatMessages from "../components/ChatComponent";
 import type { Chat } from "../components/ListChats";
 import type { Message } from "../components/ChatComponent";
 import { getRoom } from "../api/chat";
-import { useParams } from "react-router-dom";
-import { getMessages, sendMessage } from "../api/messages";
+import { getMessages } from "../api/messages";
 import { getCurrentUserId } from "../utils/auth";
+import { socket } from "../utils/socket";
 
 const InRoom = () => {
   const { id: roomId } = useParams();
@@ -16,33 +17,58 @@ const InRoom = () => {
 
   useEffect(() => {
     const initRoom = async () => {
-      try {
-        const data = await getRoom(roomId);
-        setChat(data.room);
+      const data = await getRoom(roomId);
+      setChat(data.room);
 
-        const msgRes = await getMessages(roomId);
-
-        setMessages(
-          msgRes.map((m: any) => ({
-            _id: m._id,
-            content: m.content,
-            sender: m.sender,
-            isMe: m.sender?._id == userId,
-          })),
-        );
-      } catch (err) {
-        console.error("Failed to load room", err);
-      }
+      const msgRes = await getMessages(roomId);
+      setMessages(
+        msgRes.map((m: any) => ({
+          _id: m._id,
+          content: m.content,
+          sender: m.sender,
+          isMe: m.sender?._id === userId,
+        })),
+      );
     };
+
     initRoom();
-  }, [roomId]);
+  }, [roomId, userId]);
+
+  useEffect(() => {
+    socket.connect();
+    socket.emit("join-room", roomId);
+
+    socket.on("new-message", (m: any) => {
+      setMessages((prev) => [
+        ...prev,
+        {
+          _id: m._id,
+          content: m.content,
+          sender: m.sender,
+          isMe: m.sender === userId || m.sender?._id === userId,
+        },
+      ]);
+    });
+
+    return () => {
+      socket.off("new-message");
+      socket.disconnect();
+    };
+  }, [roomId, userId]);
+
+  const handleSend = (content: string) => {
+    socket.emit("send-message", {
+      roomId,
+      content,
+    });
+  };
 
   return (
     <>
       <InRoomHeader roomName={chat?.name} roomCode={chat?.code} />
       <ChatMessages
         messages={messages}
-        onSend={sendMessage}
+        onSend={handleSend}
         roomId={roomId || ""}
       />
     </>

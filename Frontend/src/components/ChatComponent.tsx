@@ -12,7 +12,7 @@ export interface Message {
 
 interface Props {
   messages: Message[];
-  onSend: (content: string, roomId: string) => Promise<any>;
+  onSend: (content: string) => void;
   roomId: string;
 }
 
@@ -21,7 +21,7 @@ const ChatMessages = ({ messages, onSend, roomId }: Props) => {
 
   const send = () => {
     if (!message.trim()) return;
-    onSend(message, roomId);
+    onSend(message);
     setMessage("");
   };
 
