@@ -1,22 +1,27 @@
-import { useState } from "react";
-import Background from "../assets/Lunada.jpg";
-import Chat, { type Message } from "../components/Chat";
-import InRoom from "../components/InRoomHeader";
+import { useEffect, useState, type SetStateAction } from "react";
 import JoinRoom from "../components/JoinRoom";
-import ListChats from "../components/ListChats";
-import { Outlet } from "react-router-dom";
+import ListChats, { type Chat } from "../components/ListChats";
+import { getRooms } from "../api/chat";
 
 const MainPage = () => {
-  const chats = [
-    { id: 1, name: "General Chat", lastMsg: "Hey there!" },
-    { id: 2, name: "Project Team", lastMsg: "Deadline is tomorrow" },
-    { id: 3, name: "Friends", lastMsg: "Let’s meet tonight" },
-  ];
+  const [chats, setChats] = useState<Chat[]>([]);
+
+  useEffect(() => {
+    const fetchRooms = async () => {
+      try {
+        const rooms = await getRooms();
+        setChats(rooms);
+      } catch (err) {
+        console.error("Failed to load rooms", err);
+      }
+    };
+    fetchRooms();
+  }, []);
 
   return (
     <>
-      <JoinRoom />
-      <ListChats chats={chats} />
+      <JoinRoom setChats={setChats} />
+      <ListChats chats={chats} setChats={setChats} />
     </>
   );
 };

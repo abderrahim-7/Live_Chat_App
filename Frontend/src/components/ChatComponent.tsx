@@ -1,8 +1,11 @@
 import { useState } from "react";
 
 export interface Message {
-  id: number;
-  sender: string;
+  _id: string;
+  sender: {
+    _id: string;
+    username: string;
+  };
   content: string;
   isMe: boolean;
 }
@@ -23,11 +26,10 @@ const ChatMessages = ({ messages, onSend }: Props) => {
 
   return (
     <div className="bg-white/90 min-h-0 w-full flex-1 rounded-2xl flex flex-col">
-      {/* Messages */}
       <div className="flex-1 p-4 overflow-y-auto flex flex-col gap-3">
         {messages.map((msg) => (
           <div
-            key={msg.id}
+            key={msg._id}
             className={`flex ${msg.isMe ? "justify-end" : "justify-start"}`}
           >
             <div
@@ -39,7 +41,7 @@ const ChatMessages = ({ messages, onSend }: Props) => {
                 }`}
             >
               <p className="text-xs font-semibold mb-1 opacity-80">
-                {msg.sender}
+                {msg.sender.username}
               </p>
               <p className="break-words">{msg.content}</p>
             </div>
@@ -47,7 +49,6 @@ const ChatMessages = ({ messages, onSend }: Props) => {
         ))}
       </div>
 
-      {/* Input */}
       <div className="p-3 border-t border-gray-200 bg-white/40 backdrop-blur-md rounded-b-2xl flex items-center gap-2">
         <input
           type="text"

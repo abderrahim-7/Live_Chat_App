@@ -1,8 +1,0 @@
-POST http://localhost:3000/api/chat/createchatroom
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5M2IzYWIzMmZjOTQ0ZTNkNTYzMzI1MiIsImlhdCI6MTc2NTU1OTc0MSwiZXhwIjoxNzY1NjQ2MTQxfQ.0GN8sRgGufaajCDK-P4gEkomXllbzyudO_Kp_YGe3lc
-
-
-{
-    "username": "Abderrahim",
-    "password": "12345678"
-}

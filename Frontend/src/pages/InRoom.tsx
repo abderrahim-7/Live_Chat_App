@@ -1,31 +1,44 @@
-import { useState } from "react";
-import type { Message } from "../components/Chat";
+import { useEffect, useState } from "react";
 import InRoomHeader from "../components/InRoomHeader";
-import Chat from "../components/Chat";
+import ChatMessages from "../components/ChatComponent";
+import type { Chat } from "../components/ListChats";
+import type { Message } from "../components/ChatComponent";
+import { getRoom } from "../api/chat";
+import api from "../api/axios";
+import { useParams } from "react-router-dom";
 
 const InRoom = () => {
-  const [messages, setMessages] = useState<Message[]>([
-    { id: 1, sender: "Yassine", content: "Hey!", isMe: false },
-    { id: 2, sender: "Me", content: "Hi 👋", isMe: true },
-    { id: 3, sender: "Yassine", content: "How are you?", isMe: false },
-    { id: 4, sender: "Me", content: "All good, you?", isMe: true },
-  ]);
+  const { id: roomId } = useParams();
+  const [chat, setChat] = useState<Chat>();
+  const [messages, setMessages] = useState<Message[]>([]);
+  const userId = localStorage.getItem("userId"); // or decode JWT
 
-  const sendMessage = (content: string) => {
-    setMessages((prev) => [
-      ...prev,
-      {
-        id: Date.now(),
-        sender: "Me",
-        content,
-        isMe: true,
-      },
-    ]);
-  };
+  useEffect(() => {
+    const initRoom = async () => {
+      try {
+        const data = await getRoom(roomId);
+        setChat(data.room);
+
+        const msgRes = await api.get(`/api/messages/${roomId}`);
+        setMessages(
+          msgRes.data.map((m: any) => ({
+            _id: m._id,
+            content: m.content,
+            sender: m.sender,
+            isMe: m.sender._id === userId,
+          }))
+        );
+      } catch (err) {
+        console.error("Failed to load room", err);
+      }
+    };
+    initRoom();
+  }, [roomId]);
+
   return (
     <>
-      <InRoomHeader roomName={"New Chat"} roomCode={"123-456"} />
-      <Chat messages={messages} onSend={sendMessage} />
+      <InRoomHeader roomName={chat?.name} roomCode={chat?.code} />
+      <ChatMessages messages={messages} onSend={() => {}} />
     </>
   );
 };
