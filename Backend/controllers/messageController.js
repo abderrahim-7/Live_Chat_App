@@ -8,4 +8,23 @@ async function getMessages(req, res) {
     res.json(messages);
 }
 
-module.exports = { getMessages};
+async function sendMessage(req, res) {
+    const { content } = req.body;
+
+    if (!content || content.trim() === "") {
+        return res.status(400).json({ message: "The message is empty !!!" });
+    }
+
+    const message = new Message({
+        room: req.params.roomId,
+        sender: req.user.id,
+        content
+    });
+
+    await message.save();
+
+    res.status(200).json({ message: "Message sent successfully", data: message });
+}
+
+
+module.exports = { getMessages, sendMessage};

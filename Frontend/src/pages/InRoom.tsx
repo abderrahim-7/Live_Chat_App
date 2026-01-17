@@ -4,14 +4,15 @@ import ChatMessages from "../components/ChatComponent";
 import type { Chat } from "../components/ListChats";
 import type { Message } from "../components/ChatComponent";
 import { getRoom } from "../api/chat";
-import api from "../api/axios";
 import { useParams } from "react-router-dom";
+import { getMessages, sendMessage } from "../api/messages";
+import { getCurrentUserId } from "../utils/auth";
 
 const InRoom = () => {
   const { id: roomId } = useParams();
   const [chat, setChat] = useState<Chat>();
   const [messages, setMessages] = useState<Message[]>([]);
-  const userId = localStorage.getItem("userId"); // or decode JWT
+  const userId = getCurrentUserId();
 
   useEffect(() => {
     const initRoom = async () => {
@@ -19,14 +20,15 @@ const InRoom = () => {
         const data = await getRoom(roomId);
         setChat(data.room);
 
-        const msgRes = await api.get(`/api/messages/${roomId}`);
+        const msgRes = await getMessages(roomId);
+
         setMessages(
-          msgRes.data.map((m: any) => ({
+          msgRes.map((m: any) => ({
             _id: m._id,
             content: m.content,
             sender: m.sender,
-            isMe: m.sender._id === userId,
-          }))
+            isMe: m.sender?._id == userId,
+          })),
         );
       } catch (err) {
         console.error("Failed to load room", err);
@@ -38,7 +40,11 @@ const InRoom = () => {
   return (
     <>
       <InRoomHeader roomName={chat?.name} roomCode={chat?.code} />
-      <ChatMessages messages={messages} onSend={() => {}} />
+      <ChatMessages
+        messages={messages}
+        onSend={sendMessage}
+        roomId={roomId || ""}
+      />
     </>
   );
 };

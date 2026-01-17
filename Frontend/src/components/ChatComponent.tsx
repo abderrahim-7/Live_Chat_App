@@ -12,15 +12,16 @@ export interface Message {
 
 interface Props {
   messages: Message[];
-  onSend: (message: string) => void;
+  onSend: (content: string, roomId: string) => Promise<any>;
+  roomId: string;
 }
 
-const ChatMessages = ({ messages, onSend }: Props) => {
+const ChatMessages = ({ messages, onSend, roomId }: Props) => {
   const [message, setMessage] = useState("");
 
   const send = () => {
     if (!message.trim()) return;
-    onSend(message);
+    onSend(message, roomId);
     setMessage("");
   };
 
