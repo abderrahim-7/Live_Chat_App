@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export interface Message {
   _id: string;
@@ -13,11 +13,28 @@ export interface Message {
 interface Props {
   messages: Message[];
   onSend: (content: string) => void;
-  roomId: string;
 }
 
-const ChatMessages = ({ messages, onSend, roomId }: Props) => {
+const ChatMessages = ({ messages, onSend }: Props) => {
   const [message, setMessage] = useState("");
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
+  const [isAtBottom, setIsAtBottom] = useState(true);
+
+  const handleScroll = () => {
+    if (!containerRef.current) return;
+    const { scrollTop, scrollHeight, clientHeight } = containerRef.current;
+    const threshold = 50;
+    const atBottom = scrollHeight - scrollTop - clientHeight < threshold;
+
+    setIsAtBottom(atBottom);
+  };
+
+  useEffect(() => {
+    if (isAtBottom) {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages, isAtBottom]);
 
   const send = () => {
     if (!message.trim()) return;
@@ -27,7 +44,11 @@ const ChatMessages = ({ messages, onSend, roomId }: Props) => {
 
   return (
     <div className="bg-white/90 min-h-0 w-full flex-1 rounded-2xl flex flex-col">
-      <div className="flex-1 p-4 overflow-y-auto flex flex-col gap-3">
+      <div
+        ref={containerRef}
+        onScroll={handleScroll}
+        className="flex-1 p-4 overflow-y-auto flex flex-col gap-3"
+      >
         {messages.map((msg) => (
           <div
             key={msg._id}
@@ -35,11 +56,11 @@ const ChatMessages = ({ messages, onSend, roomId }: Props) => {
           >
             <div
               className={`max-w-[75%] px-3 py-2 rounded-xl text-sm
-                ${
-                  msg.isMe
-                    ? "bg-blue-500 text-white rounded-br-sm"
-                    : "bg-gray-200 text-gray-800 rounded-bl-sm"
-                }`}
+          ${
+            msg.isMe
+              ? "bg-blue-500 text-white rounded-br-sm"
+              : "bg-gray-200 text-gray-800 rounded-bl-sm"
+          }`}
             >
               <p className="text-xs font-semibold mb-1 opacity-80">
                 {msg.sender.username}
@@ -48,6 +69,8 @@ const ChatMessages = ({ messages, onSend, roomId }: Props) => {
             </div>
           </div>
         ))}
+
+        <div ref={messagesEndRef} />
       </div>
 
       <div className="p-3 border-t border-gray-200 bg-white/40 backdrop-blur-md rounded-b-2xl flex items-center gap-2">
